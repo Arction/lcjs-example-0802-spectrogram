@@ -331,7 +331,14 @@ const renderSpectrogram = async (data) => {
         }
         resumeElement.appendChild(resumeImg)
 
-        const targetElement = document.querySelector('.inner')
+        const innerElement = document.querySelector('.inner')
+        let target
+        if( !innerElement){
+            target = document.createElement('div')
+            target.classList.add('inner')
+            document.body.appendChild(target)
+        }
+        const targetElement = innerElement || target
         targetElement.appendChild(resumeElement)
         
         // Attach a listener to the audio context to remove the play button as soon as the context is running
