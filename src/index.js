@@ -11,11 +11,11 @@ const {
     PalettedFill,
     LUT,
     emptyFill,
-    emptyTick,
     emptyLine,
-    Themes,
     AxisScrollStrategies,
-    ColorHSV
+    AxisTickStrategies,
+    ColorHSV,
+    Themes
 } = lcjs
 
 const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -78,7 +78,7 @@ const processWaveForm = async (audioBuffer) => {
     // Create a new OfflineAudioContext with information from the pre-created audioBuffer
     // The OfflineAudioContext can be used to process a audio file as fast as possible.
     // Normal AudioContext would process the file at the speed of playback.
-    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels,audioBuffer.length,audioBuffer.sampleRate)
+    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate)
     // Create a new source, in this case we have a AudioBuffer to create it for, so we create a buffer source
     const source = offlineCtx.createBufferSource()
     // Set the buffer to the audio buffer we are using
@@ -96,14 +96,14 @@ const processWaveForm = async (audioBuffer) => {
     // Prepare buffers and analyzers for each channel
     const channelFFtDataBuffers = []
     const analyzers = []
-    for(let i = 0; i < source.channelCount; i += 1) {
-        channelFFtDataBuffers[i] = new Uint8Array((audioBuffer.length / config.processorBufferSize) *( config.fftResolution / 2))
+    for (let i = 0; i < source.channelCount; i += 1) {
+        channelFFtDataBuffers[i] = new Uint8Array((audioBuffer.length / config.processorBufferSize) * (config.fftResolution / 2))
         // Setup analyzer for this channel
         analyzers[i] = offlineCtx.createAnalyser()
         analyzers[i].smoothingTimeConstant = config.smoothingTimeConstant
         analyzers[i].fftSize = config.fftResolution
         // Connect the created analyzer to a single channel from the splitter
-        splitter.connect(analyzers[i],i)
+        splitter.connect(analyzers[i], i)
     }
     // Script processor is used to process all of the audio data in fftSize sized blocks
     // Script processor is a deprecated API but the replacement APIs have really poor browser support
@@ -112,7 +112,7 @@ const processWaveForm = async (audioBuffer) => {
     let offset = 0
     processor.onaudioprocess = (ev) => {
         // Run FFT for each channel
-        for(let i = 0; i < source.channelCount; i += 1){
+        for (let i = 0; i < source.channelCount; i += 1) {
             const freqData = new Uint8Array(channelFFtDataBuffers[i].buffer, offset, analyzers[i].frequencyBinCount)
             analyzers[i].getByteFrequencyData(freqData)
         }
@@ -134,7 +134,7 @@ const processWaveForm = async (audioBuffer) => {
     await offlineCtx.startRendering()
     return {
         channels: channelFFtDataBuffers,
-        stride: config.fftResolution/2,
+        stride: config.fftResolution / 2,
         tickCount: Math.ceil(audioBuffer.length / config.processorBufferSize),
         maxFreq: offlineCtx.sampleRate / 2, // max freq is always half the sample rate
         duration: audioBuffer.duration
@@ -147,7 +147,7 @@ const processWaveForm = async (audioBuffer) => {
  * @param {number}      strideSize  Single data block width
  * @param {number}      tickCount    Data row count
  */
-const remapDataToTwoDimensionalMatrix = (data, strideSize, tickCount)=>{
+const remapDataToTwoDimensionalMatrix = (data, strideSize, tickCount) => {
     /**
      * @type {Array<number>}
      */
@@ -161,10 +161,10 @@ const remapDataToTwoDimensionalMatrix = (data, strideSize, tickCount)=>{
     // [1, 4]
     // [2, 5]
     // [3, 6]
-    const output = Array.from(Array(strideSize)).map(()=> Array.from(Array(tickCount)))
-    for(let row = 0; row < strideSize; row += 1){
-        for(let col = 0; col <= tickCount; col += 1){
-            output[row][col] = arr[col*strideSize + row]
+    const output = Array.from(Array(strideSize)).map(() => Array.from(Array(tickCount)))
+    for (let row = 0; row < strideSize; row += 1) {
+        for (let col = 0; col <= tickCount; col += 1) {
+            output[row][col] = arr[col * strideSize + row]
         }
     }
 
@@ -188,8 +188,8 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
         rowIndex: channelIndex,
         rowSpan: 1
     })
-    // Hide the chart title
-    .setTitleFillStyle(emptyFill)
+        // Hide the chart title
+        .setTitleFillStyle(emptyFill)
 
     // Start position of the heatmap
     const start = {
@@ -208,7 +208,7 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
         columns: columns,
         // Data rows, defines vertical resolution
         // Use half of the fft data range
-        rows: Math.ceil(rows/2),
+        rows: Math.ceil(rows / 2),
         // Start position, defines where one of the corners for hetmap is
         start,
         // End position, defines the opposite corner of the start corner
@@ -223,11 +223,11 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
             lut: new LUT({
                 steps: [
                     { value: 0, color: ColorHSV(0, 1, 0) },
-                    { value: 255 * (1/6), color: ColorHSV(270, 0.84, 0.2) },
-                    { value: 255 * (2/6), color: ColorHSV(289, 0.86, 0.35) },
-                    { value: 255 * (3/6), color: ColorHSV(324, 0.97, 0.56) },
-                    { value: 255 * (4/6), color: ColorHSV(1, 1, 1) },
-                    { value: 255 * (5/6), color: ColorHSV(44, 0.64, 1) }
+                    { value: 255 * (1 / 6), color: ColorHSV(270, 0.84, 0.2) },
+                    { value: 255 * (2 / 6), color: ColorHSV(289, 0.86, 0.35) },
+                    { value: 255 * (3 / 6), color: ColorHSV(324, 0.97, 0.56) },
+                    { value: 255 * (4 / 6), color: ColorHSV(1, 1, 1) },
+                    { value: 255 * (5 / 6), color: ColorHSV(44, 0.64, 1) }
                 ],
                 interpolate: true
             })
@@ -235,7 +235,7 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
 
     // Set default X axis settings
     series.axisX.setInterval(start.x, end.x)
-        .setTickStyle(emptyTick)
+        .setTickStrategy(AxisTickStrategies.Empty)
         .setTitleMargin(0)
         .setScrollStrategy(undefined)
         .setMouseInteractions(false)
@@ -244,7 +244,7 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
         .setMouseInteractions(false)
     // Set default X axis settings
     series.axisY.setInterval(start.y, end.y)
-        .setTitle(`Channel ${channelIndex+1} (Hz)`)
+        .setTitle(`Channel ${channelIndex + 1} (Hz)`)
         .setScrollStrategy(AxisScrollStrategies.fitting)
 
     return {
@@ -260,6 +260,7 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
 const renderSpectrogram = async (data) => {
     // Create a dashboard with enough rows for the number of channels in data set
     const dashboard = lc.Dashboard({
+        // theme: Themes.dark 
         numberOfColumns: 1,
         numberOfRows: data.channels.length
     })
@@ -270,7 +271,7 @@ const renderSpectrogram = async (data) => {
     const charts = []
 
     // Create channels and set data for each channel
-    for(let i = 0; i < data.channels.length; i += 1){
+    for (let i = 0; i < data.channels.length; i += 1) {
         // Create a chart for the channel
         const ch = createChannel(dashboard, i, data.stride, data.tickCount, data.maxFreq, data.duration)
         // Setup the data for the chart
@@ -282,37 +283,37 @@ const renderSpectrogram = async (data) => {
     }
 
     // Style to bottom most chart axis to use it as the common axis for each chart
-    charts[charts.length -1]
-        .series 
+    charts[charts.length - 1]
+        .series
         .axisX
-        .setTickStyle(charts[0].chart.getDefaultAxisY().getTickStyle())
+        .setTickStrategy(AxisTickStrategies.Numeric)
         .setScrollStrategy(AxisScrollStrategies.fitting)
         .setTitle(`Duration (s)`)
         .setMouseInteractions(true)
 
     // Link chart X axis scales
-    charts[charts.length -1].series.axisX.onScaleChange((start,end)=>{
-            charts.forEach((c, i)=> i < charts.length-1 ? c.series.axisX.setInterval(start,end, false, false):undefined)
-        })
+    charts[charts.length - 1].series.axisX.onScaleChange((start, end) => {
+        charts.forEach((c, i) => i < charts.length - 1 ? c.series.axisX.setInterval(start, end, false, false) : undefined)
+    })
 
     return dashboard
 }
 
-(async ()=>{
+(async () => {
     // Remove loading spinner
     document.querySelectorAll('.loading').forEach(item => {
         item.parentElement.removeChild(item)
     })
     const run = async () => {
         // Load waveform from url
-        const waveform = await loadWaveForm(document.head.baseURI + 'examples/assets/lcjs_example_0802_spectrogram-Truck_driving_by-Jason_Baker-2112866529.wav')
+        const waveform = await loadWaveForm(document.head.baseURI + 'examples/assets/lcjs_example_0802_spectrogram-Truck_driving_by-Jason_Baker-2112866529_edit.wav')
         // Process the loaded wave form to prepare it for being added to the chart
         const processed = await processWaveForm(waveform)
         // Create a dashboard from the processed waveform data
         const dashboard = renderSpectrogram(processed)
     }
     // Check if audio context was started
-    if(audioCtx.state === 'suspended'){
+    if (audioCtx.state === 'suspended') {
         // Show a large play button
         const resumeElement = document.createElement('div')
         resumeElement.style.position = 'absolute'
@@ -326,30 +327,30 @@ const renderSpectrogram = async (data) => {
         resumeImg.style.width = '100%'
         resumeImg.style.height = '100%'
 
-        resumeElement.onclick = ()=>{
+        resumeElement.onclick = () => {
             audioCtx.resume()
         }
         resumeElement.appendChild(resumeImg)
 
         const innerElement = document.querySelector('.inner')
         let target
-        if( !innerElement){
+        if (!innerElement) {
             target = document.createElement('div')
             target.classList.add('inner')
             document.body.appendChild(target)
         }
         const targetElement = innerElement || target
         targetElement.appendChild(resumeElement)
-        
+
         // Attach a listener to the audio context to remove the play button as soon as the context is running
         audioCtx.onstatechange = () => {
-            if(audioCtx.state === 'running'){
+            if (audioCtx.state === 'running') {
                 run()
                 audioCtx.onstatechange = void 0
                 targetElement.removeChild(resumeElement)
             }
         }
-    }else{
+    } else {
         // Audio context is running so run the example
         run()
     }

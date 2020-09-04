@@ -88,11 +88,11 @@ for(let row = 0; row < strideSize; row += 1){
 
 ## API Links
 
-* Intensity Series Types: [IntensitySeriesTypes]
-* Intensity Grid: [IntensityGridSeries]
-* Paletted Fill Style: [PalettedFill]
-* LUT: [LUT]
-* Dashboard: [Dashboard]
+* [Intensity Series Types]
+* [Intensity Grid]
+* [Paletted Fill Style]
+* [LUT]
+* [Dashboard]
 
 
 ## Support
@@ -116,9 +116,9 @@ Direct developer email support can be purchased through a [Support Plan][4] or b
 © Arction Ltd 2009-2020. All rights reserved.
 
 
-[IntensitySeriesTypes]: https://www.arction.com/lightningchart-js-api-documentation/v1.3.0/globals.html#intensityseriestypes
-[IntensityGridSeries]: https://www.arction.com/lightningchart-js-api-documentation/v1.3.0/classes/intensitygridseries.html
-[PalettedFill]: https://www.arction.com/lightningchart-js-api-documentation/v1.3.0/classes/palettedfill.html
-[LUT]: https://www.arction.com/lightningchart-js-api-documentation/v1.3.0/classes/lut.html
-[Dashboard]: https://www.arction.com/lightningchart-js-api-documentation/v1.3.0/classes/dashboard.html
+[Intensity Series Types]: https://www.arction.com/lightningchart-js-api-documentation/v2.0.0/globals.html#intensityseriestypes
+[Intensity Grid]: https://www.arction.com/lightningchart-js-api-documentation/v2.0.0/classes/intensitygridseries.html
+[Paletted Fill Style]: https://www.arction.com/lightningchart-js-api-documentation/v2.0.0/classes/palettedfill.html
+[LUT]: https://www.arction.com/lightningchart-js-api-documentation/v2.0.0/classes/lut.html
+[Dashboard]: https://www.arction.com/lightningchart-js-api-documentation/v2.0.0/classes/dashboard.html
 
