@@ -95,6 +95,7 @@ const processWaveForm = async (audioBuffer) => {
 
     // Prepare buffers and analyzers for each channel
     const channelFFtDataBuffers = []
+    const channelDbRanges = []
     const analyzers = []
     for (let i = 0; i < source.channelCount; i += 1) {
         channelFFtDataBuffers[i] = new Uint8Array((audioBuffer.length / config.processorBufferSize) * (config.fftResolution / 2))
@@ -104,6 +105,10 @@ const processWaveForm = async (audioBuffer) => {
         analyzers[i].fftSize = config.fftResolution
         // Connect the created analyzer to a single channel from the splitter
         splitter.connect(analyzers[i], i)
+        channelDbRanges.push({
+            minDecibels: analyzers[i].minDecibels,
+            maxDecibels: analyzers[i].maxDecibels,
+        })
     }
     // Script processor is used to process all of the audio data in fftSize sized blocks
     // Script processor is a deprecated API but the replacement APIs have really poor browser support
@@ -134,10 +139,11 @@ const processWaveForm = async (audioBuffer) => {
     await offlineCtx.startRendering()
     return {
         channels: channelFFtDataBuffers,
+        channelDbRanges,
         stride: config.fftResolution / 2,
         tickCount: Math.ceil(audioBuffer.length / config.processorBufferSize),
         maxFreq: offlineCtx.sampleRate / 2, // max freq is always half the sample rate
-        duration: audioBuffer.duration
+        duration: audioBuffer.duration,
     }
 }
 
@@ -179,8 +185,10 @@ const remapDataToTwoDimensionalMatrix = (data, strideSize, tickCount) => {
  * @param {number}          columns         Data column count
  * @param {number}          maxFreq         Maximum frequency for data
  * @param {number}          duration        Duration in seconds
+ * @param {number}          minDecibels     dB amount that matches value 0 in data (Uint8).
+ * @param {number}          maxDecibels     dB amount that matches value 255 in data (Uint8).
  */
-const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration) => {
+const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration, minDecibels, maxDecibels) => {
     // Create a new chart in a specified row
     const chart = dashboard.createChartXY({
         columnIndex: 0,
@@ -190,6 +198,9 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
     })
         // Hide the chart title
         .setTitleFillStyle(emptyFill)
+
+    // Define function that maps Uint8 [0, 255] to Decibels.
+    const intensityDataToDb = (intensity) => minDecibels + (intensity / 255) * (maxDecibels-minDecibels)
 
     // Start position of the heatmap
     const start = {
@@ -222,16 +233,24 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
         .setFillStyle(new PalettedFill({
             lut: new LUT({
                 steps: [
-                    { value: 0, color: ColorHSV(0, 1, 0) },
-                    { value: 255 * (1 / 6), color: ColorHSV(270, 0.84, 0.2) },
-                    { value: 255 * (2 / 6), color: ColorHSV(289, 0.86, 0.35) },
-                    { value: 255 * (3 / 6), color: ColorHSV(324, 0.97, 0.56) },
-                    { value: 255 * (4 / 6), color: ColorHSV(1, 1, 1) },
-                    { value: 255 * (5 / 6), color: ColorHSV(44, 0.64, 1) }
+                    { value: 0, color: ColorHSV(0, 1, 0), label: `${Math.round(intensityDataToDb( 255 * (0/6) ))}` },
+                    { value: 255 * (1 / 6), color: ColorHSV(270, 0.84, 0.2), label: `${Math.round(intensityDataToDb( 255 * (1/6) ))}` },
+                    { value: 255 * (2 / 6), color: ColorHSV(289, 0.86, 0.35), label: `${Math.round(intensityDataToDb( 255 * (2/6) ))}`  },
+                    { value: 255 * (3 / 6), color: ColorHSV(324, 0.97, 0.56), label: `${Math.round(intensityDataToDb( 255 * (3/6) ))}`  },
+                    { value: 255 * (4 / 6), color: ColorHSV(1, 1, 1), label: `${Math.round(intensityDataToDb( 255 * (4/6) ))}`  },
+                    { value: 255 * (5 / 6), color: ColorHSV(44, 0.64, 1), label: `${Math.round(intensityDataToDb( 255 * (5/6) ))}`  },
+                    { value: 255, color: ColorHSV(62, 0.32, 1), label: `${Math.round(intensityDataToDb( 255 * (6/6) ))}`  }
                 ],
+                units: 'dB',
                 interpolate: true
             })
         }))
+        .setCursorResultTableFormatter((builder, series, x, y, value) => builder
+            .addRow(series.getName())
+            .addRow('X:', '', series.axisX.formatValue(x))
+            .addRow('Y:', '', series.axisY.formatValue(y))
+            .addRow('', intensityDataToDb(value).toFixed(1) + ' dB')
+        )
 
     // Set default X axis settings
     series.axisX.setInterval(start.x, end.x)
@@ -246,6 +265,9 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
     series.axisY.setInterval(start.y, end.y)
         .setTitle(`Channel ${channelIndex + 1} (Hz)`)
         .setScrollStrategy(AxisScrollStrategies.fitting)
+
+    // Add LegendBox.
+    const legend = chart.addLegendBox().add(chart)
 
     return {
         chart,
@@ -273,7 +295,7 @@ const renderSpectrogram = async (data) => {
     // Create channels and set data for each channel
     for (let i = 0; i < data.channels.length; i += 1) {
         // Create a chart for the channel
-        const ch = createChannel(dashboard, i, data.stride, data.tickCount, data.maxFreq, data.duration)
+        const ch = createChannel(dashboard, i, data.stride, data.tickCount, data.maxFreq, data.duration, data.channelDbRanges[i].minDecibels, data.channelDbRanges[i].maxDecibels)
         // Setup the data for the chart
         const remappedData = remapDataToTwoDimensionalMatrix(data.channels[i], data.stride, data.tickCount)
         // Set the heatmap data

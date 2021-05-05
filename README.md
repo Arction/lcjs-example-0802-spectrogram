@@ -116,9 +116,9 @@ Direct developer email support can be purchased through a [Support Plan][4] or b
 © Arction Ltd 2009-2020. All rights reserved.
 
 
-[Intensity Series Types]: https://www.arction.com/lightningchart-js-api-documentation/v2.2.0/globals.html#intensityseriestypes
-[Intensity Grid]: https://www.arction.com/lightningchart-js-api-documentation/v2.2.0/classes/intensitygridseries.html
-[Paletted Fill Style]: https://www.arction.com/lightningchart-js-api-documentation/v2.2.0/classes/palettedfill.html
-[LUT]: https://www.arction.com/lightningchart-js-api-documentation/v2.2.0/classes/lut.html
-[Dashboard]: https://www.arction.com/lightningchart-js-api-documentation/v2.2.0/classes/dashboard.html
+[Intensity Series Types]: https://www.arction.com/lightningchart-js-api-documentation/v3.0.0/globals.html#intensityseriestypes
+[Intensity Grid]: https://www.arction.com/lightningchart-js-api-documentation/v3.0.0/classes/intensitygridseries.html
+[Paletted Fill Style]: https://www.arction.com/lightningchart-js-api-documentation/v3.0.0/classes/palettedfill.html
+[LUT]: https://www.arction.com/lightningchart-js-api-documentation/v3.0.0/classes/lut.html
+[Dashboard]: https://www.arction.com/lightningchart-js-api-documentation/v3.0.0/classes/dashboard.html
 
