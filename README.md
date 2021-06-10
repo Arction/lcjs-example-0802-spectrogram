@@ -1,6 +1,6 @@
-# Heatmap Spectrogram
+# JavaScript Heatmap Spectrogram Chart
 
-![Heatmap Spectrogram](heatmapSpectrogram.png)
+![JavaScript Heatmap Spectrogram Chart](heatmapSpectrogram.png)
 
 This demo application belongs to the set of examples for LightningChart JS, data visualization library for JavaScript.
 
