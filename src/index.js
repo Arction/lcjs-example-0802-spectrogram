@@ -354,7 +354,7 @@ const renderSpectrogram = async (data) => {
         }
         resumeElement.appendChild(resumeImg)
 
-        const innerElement = document.querySelector('.inner')
+        const innerElement = document.querySelector('.chart')
         let target
         if (!innerElement) {
             target = document.createElement('div')
