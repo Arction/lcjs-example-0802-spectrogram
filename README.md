@@ -120,7 +120,7 @@ Direct developer email support can be purchased through a [Support Plan][4] or b
 © Arction Ltd 2009-2020. All rights reserved.
 
 
-[Heatmap Grid Series Intensity]: https://www.arction.com/lightningchart-js-api-documentation/v3.1.0/
+[Heatmap Grid Series Intensity]: https://www.arction.com/lightningchart-js-api-documentation/v3.1.0/classes/heatmapgridseriesintensityvalues.html
 [Paletted Fill Style]: https://www.arction.com/lightningchart-js-api-documentation/v3.1.0/classes/palettedfill.html
 [LUT]: https://www.arction.com/lightningchart-js-api-documentation/v3.1.0/classes/lut.html
 [Dashboard]: https://www.arction.com/lightningchart-js-api-documentation/v3.1.0/classes/dashboard.html
