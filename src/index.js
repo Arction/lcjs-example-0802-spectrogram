@@ -14,6 +14,7 @@ const {
   AxisScrollStrategies,
   AxisTickStrategies,
   ColorHSV,
+  synchronizeAxisIntervals,
   Themes,
 } = lcjs;
 
@@ -401,13 +402,8 @@ const renderSpectrogram = async (data) => {
     .setOrigin({ x: 1, y: 0 });
   charts.forEach((c) => legend.add(c.chart));
   // Link chart X axis scales
-  charts[charts.length - 1].series.axisX.onScaleChange((start, end) => {
-    charts.forEach((c, i) =>
-      i < charts.length - 1
-        ? c.series.axisX.setInterval(start, end, false, false)
-        : undefined
-    );
-  });
+  const syncedAxes = charts.map(chart => chart.series.axisX)
+  synchronizeAxisIntervals(...syncedAxes)
 
   return dashboard;
 };
