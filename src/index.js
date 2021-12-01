@@ -373,6 +373,7 @@ const renderSpectrogram = async (data) => {
     )
       // Slice only first half of data (rest are 0s).
       .slice(0, data.stride / 2);
+
     // Set the heatmap data
     ch.series.invalidateIntensityValues({
       iRow: 0,
