@@ -418,7 +418,7 @@ const renderSpectrogram = async (data) => {
     // Load waveform from url
     const waveform = await loadWaveForm(
       document.head.baseURI +
-        "examples/assets/lcjs_example_0802_spectrogram-Truck_driving_by-Jason_Baker-2112866529_edit.wav"
+        "examples/assets/0802/Truck_driving_by-Jason_Baker-2112866529_edit.wav"
     );
     // Process the loaded wave form to prepare it for being added to the chart
     const processed = await processWaveForm(waveform);
@@ -438,7 +438,7 @@ const renderSpectrogram = async (data) => {
     const resumeImg = document.createElement("img");
     resumeImg.src =
       document.head.baseURI +
-      "examples/assets/lcjs_example_0802_spectrogram-play_circle_outline-24px.svg";
+      "examples/assets/0802/play_circle_outline24px.svg";
     resumeImg.style.width = "100%";
     resumeImg.style.height = "100%";
 
