@@ -436,9 +436,10 @@ const renderSpectrogram = async (data) => {
     resumeElement.style.bottom = "0";
 
     const resumeImg = document.createElement("img");
+    resumeImg.crossOrigin = ''
     resumeImg.src =
       document.head.baseURI +
-      "examples/assets/0802/play_circle_outline24px.svg";
+      "examples/assets/0802/play_circle_outline-24px.svg";
     resumeImg.style.width = "100%";
     resumeImg.style.height = "100%";
 
