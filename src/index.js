@@ -278,6 +278,7 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
  */
 const renderSpectrogram = async (data) => {
     // Create a dashboard with enough rows for the number of channels in data set
+    // NOTE: Using `Dashboard` is no longer recommended for new applications. Find latest recommendations here: https://lightningchart.com/js-charts/docs/basic-topics/grouping-charts/
     const dashboard = lc
         .Dashboard({
             // theme: Themes.darkGold
