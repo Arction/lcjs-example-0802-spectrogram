@@ -281,7 +281,7 @@ const renderSpectrogram = async (data) => {
     // NOTE: Using `Dashboard` is no longer recommended for new applications. Find latest recommendations here: https://lightningchart.com/js-charts/docs/basic-topics/grouping-charts/
     const dashboard = lc
         .Dashboard({
-            theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined
+            theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined,
             numberOfColumns: 1,
             numberOfRows: data.channels.length,
         })
