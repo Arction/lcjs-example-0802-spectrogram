@@ -350,7 +350,11 @@ const renderSpectrogram = async (data) => {
     })
     const run = async () => {
         // Load waveform from url
-        const waveform = await loadWaveForm(document.head.baseURI + 'examples/assets/0802/Truck_driving_by-Jason_Baker-2112866529_edit.wav')
+        const waveform = await loadWaveForm(
+            new URL(document.head.baseURI).origin +
+                new URL(document.head.baseURI).pathname +
+                'examples/assets/0802/Truck_driving_by-Jason_Baker-2112866529_edit.wav',
+        )
         // Process the loaded wave form to prepare it for being added to the chart
         const processed = await processWaveForm(waveform)
         // Create a dashboard from the processed waveform data
@@ -368,7 +372,10 @@ const renderSpectrogram = async (data) => {
 
         const resumeImg = document.createElement('img')
         resumeImg.crossOrigin = ''
-        resumeImg.src = document.head.baseURI + 'examples/assets/0802/play_circle_outline-24px.svg'
+        resumeImg.src =
+            new URL(document.head.baseURI).origin +
+            new URL(document.head.baseURI).pathname +
+            'examples/assets/0802/play_circle_outline-24px.svg'
         resumeImg.style.width = '100%'
         resumeImg.style.height = '100%'
 
