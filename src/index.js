@@ -43,7 +43,9 @@ const config = {
 }
 
 // Initialize LightningChart JS
-const lc = lightningChart()
+const lc = lightningChart({
+            resourcesBaseUrl: new URL(document.head.baseURI).origin + new URL(document.head.baseURI).pathname + 'resources/',
+        })
 
 /**
  * Fetch audio file and create audio buffer from it.
