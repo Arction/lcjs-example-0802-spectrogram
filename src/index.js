@@ -5,19 +5,7 @@
 const lcjs = require('@arction/lcjs')
 
 // Extract required parts from LightningChartJS.
-const {
-    lightningChart,
-    PalettedFill,
-    LUT,
-    emptyFill,
-    emptyLine,
-    AxisScrollStrategies,
-    AxisTickStrategies,
-    ColorHSV,
-    synchronizeAxisIntervals,
-    regularColorSteps,
-    Themes,
-} = lcjs
+const { lightningChart, PalettedFill, LUT, emptyLine, AxisScrollStrategies, AxisTickStrategies, regularColorSteps, Themes } = lcjs
 
 const AudioContext = window.AudioContext || window.webkitAudioContext
 // Create a new audio context,
@@ -182,7 +170,6 @@ const remapDataToTwoDimensionalMatrix = (data, strideSize, tickCount) => {
 
 /**
  * Create a chart for a channel
- * @param {lcjs.Dashboard}  dashboard       Dashboard to create the chart in
  * @param {number}          channelIndex    Current channel index
  * @param {number}          rows            Data row count
  * @param {number}          columns         Data column count
@@ -191,17 +178,7 @@ const remapDataToTwoDimensionalMatrix = (data, strideSize, tickCount) => {
  * @param {number}          minDecibels     dB amount that matches value 0 in data (Uint8).
  * @param {number}          maxDecibels     dB amount that matches value 255 in data (Uint8).
  */
-const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration, minDecibels, maxDecibels) => {
-    // Create a new chart in a specified row
-    const chart = dashboard
-        .createChartXY({
-            columnIndex: 0,
-            columnSpan: 1,
-            rowIndex: channelIndex,
-            rowSpan: 1,
-        })
-        // Hide the chart title
-        .setTitleFillStyle(emptyFill)
+const createChannel = (chart, channelIndex, rows, columns, maxFreq, duration, minDecibels, maxDecibels) => {
     const theme = chart.getTheme()
 
     // Define function that maps Uint8 [0, 255] to Decibels.
@@ -218,9 +195,11 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
         // Use half of the fft data range
         y: Math.ceil(maxFreq / 2),
     }
+    const yAxis = chart.addAxisY({ iStack: 1 - channelIndex }).setMargins(channelIndex < 1 ? 15 : 0, channelIndex > 0 ? 15 : 0)
     // Create the series
     const series = chart
         .addHeatmapGridSeries({
+            yAxis,
             // Data columns, defines horizontal resolution
             columns: columns,
             // Use half of the fft data range
@@ -254,23 +233,14 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
         )
 
     // Set default X axis settings
-    series.axisX
-        .setInterval({ start: start.x, end: end.x, stopAxisAfter: false })
-        .setTickStrategy(AxisTickStrategies.Empty)
-        .setTitleMargin(0)
-        .setScrollStrategy(undefined)
-        .setMouseInteractions(false)
-    // Set default chart settings
-    chart.setPadding({ left: 0, top: 8, right: 8, bottom: 1 }).setMouseInteractions(false)
-    // Set default X axis settings
-    series.axisY
+    yAxis
         .setInterval({ start: start.y, end: end.y, stopAxisAfter: false })
         .setTitle(`Channel ${channelIndex + 1} (Hz)`)
         .setScrollStrategy(AxisScrollStrategies.fitting)
 
     return {
-        chart,
         series,
+        yAxis,
     }
 }
 
@@ -279,25 +249,22 @@ const createChannel = (dashboard, channelIndex, rows, columns, maxFreq, duration
  * @param {WaveFormData} data Data set to render
  */
 const renderSpectrogram = async (data) => {
-    // Create a dashboard with enough rows for the number of channels in data set
-    // NOTE: Using `Dashboard` is no longer recommended for new applications. Find latest recommendations here: https://lightningchart.com/js-charts/docs/basic-topics/grouping-charts/
-    const dashboard = lc
-        .Dashboard({
+    const chart = lc
+        .ChartXY({
             theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined,
-            numberOfColumns: 1,
-            numberOfRows: data.channels.length,
         })
-        // Hide the dashboard splitter
-        .setSplitterStyle(emptyLine)
-
-    // Collection of created charts
-    const charts = []
-
+        .setTitle('Spectrogram chart 2 channels')
+    chart
+        .getDefaultAxisX()
+        .setTickStrategy(AxisTickStrategies.Numeric)
+        .setScrollStrategy(AxisScrollStrategies.fitting)
+        .setTitle(`Duration (s)`)
+    chart.getDefaultAxisY().dispose()
     // Create channels and set data for each channel
     for (let i = 0; i < data.channels.length; i += 1) {
         // Create a chart for the channel
         const ch = createChannel(
-            dashboard,
+            chart,
             i,
             data.stride,
             data.tickCount,
@@ -317,32 +284,17 @@ const renderSpectrogram = async (data) => {
             iColumn: 0,
             values: remappedData,
         })
-        // Add the created chart and series to collection
-        charts.push(ch)
     }
 
-    // Style to bottom most chart axis to use it as the common axis for each chart
-    charts[charts.length - 1].series.axisX
-        .setTickStrategy(AxisTickStrategies.Numeric)
-        .setScrollStrategy(AxisScrollStrategies.fitting)
-        .setTitle(`Duration (s)`)
-
     // Add LegendBox.
-    const legend = dashboard
+    const legend = chart
         .addLegendBox()
+        .add(chart)
         // Dispose example UI elements automatically if they take too much space. This is to avoid bad UI on mobile / etc. devices.
         .setAutoDispose({
             type: 'max-width',
             maxWidth: 0.3,
         })
-        .setPosition({ x: 100, y: 50 })
-        .setOrigin({ x: 1, y: 0 })
-    charts.forEach((c) => legend.add(c.chart))
-    // Link chart X axis scales
-    const syncedAxes = charts.map((chart) => chart.series.axisX)
-    synchronizeAxisIntervals(...syncedAxes)
-
-    return dashboard
 }
 
 ;(async () => {
@@ -360,7 +312,7 @@ const renderSpectrogram = async (data) => {
         // Process the loaded wave form to prepare it for being added to the chart
         const processed = await processWaveForm(waveform)
         // Create a dashboard from the processed waveform data
-        const dashboard = renderSpectrogram(processed)
+        renderSpectrogram(processed)
     }
     // Check if audio context was started
     if (audioCtx.state === 'suspended') {
