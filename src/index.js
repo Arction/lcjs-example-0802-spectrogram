@@ -2,7 +2,7 @@
  * LightningChartJS 2D audio analysis spectrogram example.
  */
 // Import LightningChartJS
-const lcjs = require('@arction/lcjs')
+const lcjs = require('@lightningchart/lcjs')
 
 // Extract required parts from LightningChartJS.
 const { lightningChart, PalettedFill, LUT, emptyLine, AxisScrollStrategies, AxisTickStrategies, regularColorSteps, Themes } = lcjs
@@ -204,13 +204,11 @@ const createChannel = (chart, channelIndex, rows, columns, maxFreq, duration, mi
             columns: columns,
             // Use half of the fft data range
             rows: Math.ceil(rows / 2),
-            // Start position, defines where one of the corners for hetmap is
-            start,
-            // End position, defines the opposite corner of the start corner
-            end,
             dataOrder: 'rows',
             heatmapDataType: 'intensity',
         })
+        .setStart(start)
+        .setEnd(end)
         // Use palletted fill style, intensity values define the color for each data point based on the LUT
         .setFillStyle(
             new PalettedFill({
@@ -224,18 +222,12 @@ const createChannel = (chart, channelIndex, rows, columns, maxFreq, duration, mi
             }),
         )
         .setWireframeStyle(emptyLine)
-        .setCursorResultTableFormatter((builder, series, dataPoint) =>
-            builder
-                .addRow(series.getName())
-                .addRow('X:', '', series.axisX.formatValue(dataPoint.x))
-                .addRow('Y:', '', series.axisY.formatValue(dataPoint.y))
-                .addRow('', intensityDataToDb(dataPoint.intensity).toFixed(1) + ' dB'),
-        )
 
     // Set default X axis settings
     yAxis
         .setInterval({ start: start.y, end: end.y, stopAxisAfter: false })
-        .setTitle(`Channel ${channelIndex + 1} (Hz)`)
+        .setTitle(`Channel ${channelIndex + 1}`)
+        .setUnits('Hz')
         .setScrollStrategy(AxisScrollStrategies.fitting)
 
     return {
@@ -254,11 +246,13 @@ const renderSpectrogram = async (data) => {
             theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined,
         })
         .setTitle('Spectrogram chart 2 channels')
+        .setCursorMode('show-nearest')
     chart
         .getDefaultAxisX()
         .setTickStrategy(AxisTickStrategies.Numeric)
         .setScrollStrategy(AxisScrollStrategies.fitting)
-        .setTitle(`Duration (s)`)
+        .setTitle(`Duration`)
+        .setUnits('s')
     chart.getDefaultAxisY().dispose()
     // Create channels and set data for each channel
     for (let i = 0; i < data.channels.length; i += 1) {
