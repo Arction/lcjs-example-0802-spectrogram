@@ -195,7 +195,7 @@ const createChannel = (chart, channelIndex, rows, columns, maxFreq, duration, mi
         // Use half of the fft data range
         y: Math.ceil(maxFreq / 2),
     }
-    const yAxis = chart.addAxisY({ iStack: 1 - channelIndex }).setMargins(channelIndex < 1 ? 15 : 0, channelIndex > 0 ? 15 : 0)
+    const yAxis = chart.addAxisY({ iStack: 1 - channelIndex }).setMargins(channelIndex < 1 ? 5 : 0, channelIndex > 0 ? 5 : 0)
     // Create the series
     const series = chart
         .addHeatmapGridSeries({
